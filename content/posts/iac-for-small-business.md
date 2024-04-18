@@ -138,7 +138,7 @@ Based on the analysis above, we need our IAC to handle the following:
 
 - **Target model**: terraform code is basically a description of the target model I want to have. I like that but it cannot be a complete tool for our IAC because it's missing manual steps and it's not a good tool to handle provisioning scripts for local machines or VMs.
 
-- **Workflows**: Provisioning infrastructure, cloud, local or hybrid, sometimes requires multiple steps that are best executed as a part of a workflow. The workflow is not always required however, the component can be deployed directly just with the provided configuration.
+- **Workflows**: Provisioning infrastructure, cloud, local or hybrid, sometimes requires multiple steps that are best executed as a part of a workflow that may or may not include manual steps. The workflow is not always required however, the component can be deployed directly just with the provided configuration.
 
 The target model can be represented by an UML component diagram or by the dependency graph that you [can create with terraform](https://developer.hashicorp.com/terraform/cli/commands/graph). Workflow represents steps required to provision certain parts of the target model.
 
