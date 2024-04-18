@@ -1,5 +1,5 @@
 +++
-title = 'IAC (+ DevOps) for small business'
+title = 'IAC for small business'
 date = 2024-04-18T09:37:01+02:00
 draft = false
 +++
@@ -91,7 +91,7 @@ Most of the time, this "root configuration" must be provisioned manually, you ca
 
 Good secrets should rotate with some periodicity that makes sense from security standpoint but is also practical. I guess that in small architectures you can have static secrets as well and there is no problem with that.
 
-But HTTPS certificates force you to rotate some secrets, namely your Let's Encrypt certificates validated with a browser-trusted authorities for your websites. Luckily there are tools such as `acme.sh` or *Nginx Proxy Manager* that help you with it...but again, this is a tool that needs to be downloaded, installed and used which means it's part of your architecture which means it should be mentioned in your IAC somehow.
+But HTTPS certificates force you to rotate secrets if you want your websites to smoothly support HTTPS. Luckily there are tools such as `acme.sh` or *Nginx Proxy Manager* that help you with it...but again, this is a tool that needs to be downloaded, installed and used which means it's part of your architecture which means it should be mentioned in your IAC somehow.
 
 ## Purpose of IAC
 
@@ -99,9 +99,47 @@ The purpose of IAC for me is more than just having a code in one place.
 
 IAC is:
 - You have all code in one place
-- The code is self documenting
-- The code manipulates your architecture **completely** where possible, as terraform does
+- The code is **self documenting**
+- The code manipulates your architecture **completely** where possible.
 - The code **documents** your architecture where automated manipulation is not possible
 - This means: your code **documents** your architecture **completely**
 
-And of course you should be able to scale this and put your IAC as part of another IAC or to split IAC into many multiple IAC.   
+And of course you should be able to scale this and put your IAC as part of another IAC or to split IAC into many multiple IAC.
+
+## Where is the beginning of IAC?
+
+Of course this is opinionated but for startups/small businesses/isolated teams the following should apply.
+
+- If you want to create architecture on cloud I believe that you are already at the point where everything you do **CAN** and **SHOULD** be centralized in your IAC.
+
+- If you want to create architecture on your infrastructure of course you first need to obtain your devices, place them physically in your server room/rack, connect them and install OS of your choice. The IAC tool should support this approach so you can still have everything in your place: documentation of your infrastructure/physical & OS layer semantically connected to the IAC of your IT architecture. 
+
+- And if you are hybrid, you use cloud and your own infrastructure. Your IAC should be able to cover this as well. 
+
+![IAC approaches](/posts/images/iacdevops/iacarch.png)
+
+## To IAC or not to IAC
+
+Trying to provision as much stuff as possible with IAC can be difficult especially when dealing with freshly installed devices in your local infrastructure or with VMs in general. The industry-standard tool for provisioning machines or VMs is not terraform but Ansible. You can use Ansible to provision your cloud but you are going to have a horrible time doing that. The same applies for using terraform to provision your local machines.
+
+Provisioning architecture on local infrastructure is harder. You first need to provision the machine itself: 
+- set up automatical updates and restarts
+- install necessary stuff like docker, git, various CLIs, etc.
+- set up SSH users
+- set up firewall
+- disable root
+- etc.
+
+Then you setup the architecture required for the applications you want to run here. In the small scope of my startup I believe it's best to stick with docker compose and avoiding installing anything on the machine directly.
+
+## Components of the ideal IAC tool
+
+Based on the analysis above, we need our IAC to handle the following:
+
+- **Target model**: terraform code is basically a description of the target model I want to have. I like that but it cannot be a complete tool for our IAC because it's missing manual steps and it's not a good tool to handle provisioning scripts for local machines or VMs.
+
+- **Workflows**: Provisioning infrastructure, cloud, local or hybrid, sometimes requires multiple steps that are best executed as a part of a workflow. The workflow is not always required however, the component can be deployed directly just with the provided configuration.
+
+The target model can be represented by an UML component diagram or by the dependency graph that you [can create with terraform](https://developer.hashicorp.com/terraform/cli/commands/graph). Workflow represents steps required to provision certain parts of the target model.
+
+![Target model & workflow](/posts/images/iacdevops/targetmodelwf2.png)
