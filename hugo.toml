@@ -1,0 +1,9 @@
+baseURL = 'https://czmirek.github.io/'
+languageCode = 'en-us'
+title = 'Blog about IT'
+theme = 'm10c'
+
+[params]
+avatar = 'ich2.jpg'
+author = 'Miroslav Thompson'
+description = 'I write about code and IT'
