@@ -4,18 +4,18 @@ date = 2024-04-18T09:37:01+02:00
 draft = false
 +++
 
-This article is an analysis of how to approach `Infrastructure as Code` (IAC) and partially also DevOps for a small business. I'm writting this because I'm a co-owner of a small startup company responsible for the application for tourists and guides called [Locura](https://play.google.com/store/apps/details?id=cz.projectport.locura&hl=en&gl=US) and I've been trying to put all my experience to use as a developer, devops and an architect from other companies I've worked for.
+This article is an analysis of how to approach **Infrastructure as Code** (IAC) for a small business. I'm a co-owner of a small startup company responsible for the application for tourists and guides called [Locura](https://play.google.com/store/apps/details?id=cz.projectport.locura&hl=en&gl=US) and I've been trying to put all my experience to use as a developer, devops and an architect from other companies I've worked for.
 
 ## Starting in startup
-At the beggining of the Locura project I've imagined that I'll never put up with the physical layer and everything would run on cloud, in my case Azure. Not only that --- my idea was that everything would be PaaS. I do not want to manage VMs either. Just give me a platform to deploy on and let me work. And everything was to be smooth, at least that's what I imagined. No physical infrastructure, no VMs, only pure PaaS with Azure WebApps.
+At the beggining of the Locura project I imagined that I'll never put up with the physical layer and everything would run on cloud, in my case Azure. Not only that --- my idea was that everything would be PaaS. I do not want to manage VMs either. Just give me a platform to deploy on and let me work. And everything was to be smooth, at least that's what I imagined. No physical infrastructure, no VMs, only pure PaaS with Azure WebApps.
 
 ![Everything on Azure](/posts/images/iacdevops/azure1.png)
 
-And of course I very soon learned that this is not really possible unless I want to pay a lot of money. Because the awesome thing with clouds like Azure is that you can provision everything very quickly. This leads you to thinking that **it's easy** is more important than **it's expensive**.
+And of course very soon I learned this is not really possible unless I want to pay a lot of money. Because the awesome thing with clouds like Azure is that you can provision everything very quickly. This leads you to thinking that **it's easy** is more important than **it's expensive**.
 
 ![Expensive choices on Azure](/posts/images/iacdevops/azurepricey.png)
 
-I like cloud. I like how everything can be provisioned quickly, how you can have a lot of infrastructure almost immediately ready. With tools like terraform you can update it or remove it as quickly as well.
+I like cloud. I like how everything can be provisioned quickly and how you can have a lot of infrastructure almost immediately ready. With tools like terraform you can update it or remove it as quickly as well.
 
 Can you do something about it? For example, instead of provisioning multiple WebApp Plans (each one costs money) you provision only a single one and all environments are deployed into the same plan?
 
@@ -63,7 +63,9 @@ Sometimes things just require that you do some other things **manually**. And te
 
 If you run stuff on Azure you need to have a Microsoft account and you need to use some of many ways of telling terraform how to authenticate with Azure.
 
-But that leads to another problem. Where do you place your terraform authentication to Azure? I believe that better IAC approach is to use terraform locally with your `az login` credentials. Because if you use an app registration with custom `client_id` and `client_secret`, you need to document somewhere (outside your IAC) that there is this `client_id` and that `client_secret` for this purpose. Which is a context **outside terraform**. Which means that terraform can be part of your IAC but not your complete IAC.
+But that leads to another problem. Where do you place your terraform authentication to Azure? Terraform provider offers you multiple approaches, from using your local credentials created with `az login` or by specifying a custom `client_id` and `client_secret`. 
+
+But both approaches require manual steps. How do you include that in your IAC? It cannot be part of terraform because it's a step that your terraform project depends on. And this dependency is still part of your architecture and in my opinion should be also part of your IAC.
 
 ## Human opinionated external services
 
@@ -77,21 +79,19 @@ In some setups it's not possible to have everything written in terraform and cal
 
 These multi-step processes are workflows with manual steps. Is there a good IAC tool that supports workflows? Haha, no!
 
-## IAC state
-
-Resources inside of your terraform project are linked to a state about the real resource. If you create the resource the state is updated that the resource exists with certain ID. Because of the state terraform is able to sync/overwritte changes based on what changed: your terraform definition or the outside resource.
-
-I don't really want to work with state because the complete state of a "well behaved resource" should always be available from the resource's API. 
-
-State file creates another layer of complications. I want to call `terraform check` which checks the terraform code with the actual state of resources directly. With state I'm now comparing actual state with state, state with code, code with actual state and terraform kinda sucks for this because it has to make opinionated decisions about what it means when some information is missing/is changed/is new.
-
 ## IAC configuration & secrets
 
-This is one of most important aspects of IAC. You have to configure stuff and you have to include secrets in your stuff.
+You have to configure stuff and you have to include secrets in your stuff.
 
-At the top of IAC there is some "root configuration". For example, if you want to provision Azure, you have to provision the information about how to get into Azure. If you want to provision a physical machine running Linux, you have to provision the information about how to get there. 
+At the top of IAC there is some "root configuration". For example, if you want to provision Azure, you have to provision the information about how to get into Azure. If you want to provision a physical machine running Linux, you have to provision the information about how to get there (e.g. SSH credentials). 
 
 Most of the time, this "root configuration" must be provisioned manually, you cannot automate it. You have to manually create your MS account, set up your Linux user and its password.
+
+### Secrets rotation
+
+Good secrets should rotate with some periodicity that makes sense from security standpoint but is also practical. I guess that in small architectures you can have static secrets as well and there is no problem with that.
+
+But HTTPS certificates force you to rotate some secrets, namely your Let's Encrypt certificates validated with a browser-trusted authorities for your websites. Luckily there are tools such as `acme.sh` or *Nginx Proxy Manager* that help you with it...but again, this is a tool that needs to be downloaded, installed and used which means it's part of your architecture which means it should be mentioned in your IAC somehow.
 
 ## Purpose of IAC
 
