@@ -153,3 +153,23 @@ The target model can be represented by an UML component diagram or by the depend
 ## OS dependency only
 
 Ideal IAC tool is an application that handles your project in a single file or across multiple files, it should be just a single runnable application with no dependency on an external Postgre database and such. The only allowed dependency here is a filesystem.
+This is what terraform does and does it right. It's a tool that runs locally on architecture defined in your `tf` files.
+
+It's also why tools like Windmill or Infisical cannot be complete IAC tools, they depend on SQL databases, Redis and such. So you have the IAC for IAC problem again.
+
+## IAC approach options
+
+It's now obvious to me that there are two approaches to IAC in a small business scope.
+
+- use an IAC toolchain. Choose tools that hopefully don't need to be "IACed" very much themselves otherwise you'll need to document it elsewhere or hope that this part is simple enough for you to remember.
+
+- use a single tool that is purposefully dedicated for this specific problem. What tool, does it exist? Haha, no!
+
+## Conclusion
+
+I looked at
+(https://softwarearchitecture.tools)[https://softwarearchitecture.tools] and there is even no mention of terraform so I guess it's not the right tool for the IT architecture according to someone?
+
+IT architecture is considered as something only big corporations do, where the IT Architect draws diagrams in Enterprise Architect and some other people (probably DevOps) do the hard work of provisioning what the architects drew and documented on some higher layer of abstraction.
+
+But what about us startups? The market is missing a jack-of-all-trades tool, focusing everything in one place (or even better one file). Basically a tool that is not afraid to take the IAC approach to its maximum potential and became a centralized definition of whatever architecture you can think of. Not only as the direct provisioner, as the tool that can check your target architecture with the current state, but also as the source of documentation of your architecture.
