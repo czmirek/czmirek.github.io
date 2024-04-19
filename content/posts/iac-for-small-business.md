@@ -67,6 +67,12 @@ But that leads to another problem. Where do you place your terraform authenticat
 
 But both approaches require manual steps. How do you include that in your IAC? It cannot be part of terraform because it's a step that your terraform project depends on. And this dependency is still part of your architecture and in my opinion should be also part of your IAC.
 
+### Terraform dependencies
+
+The common approach in terraform is that you declare terraform input `variable` and that represents the external dependency. But this means that terraform cannot be the *complete* IAC tool, you have to define and document how you created the dependencies elsewhere.
+
+You can put your external values in resources, e.g. into the Azure Key Vault or use the `tfvars` file or put them into a JSON file and use the `file` function...but none of these solutions give you a sane *"centralized IAC"* solution I'd hoped for. Terraform still is only just part of your "IAC toolchain" where the complete description of target architecture can be represented only by a written page on Confluence or somewhere else. 
+
 ## Human opinionated external services
 
 [Locura](https://play.google.com/store/apps/details?id=cz.projectport.locura&hl=en&gl=US) is a mobile application deployed on Google Play for Android and on App Store for iOS. And let me tell you that there are lot of hoops you have to jump through **manually** when you are a new company deploying a new application to either of these two application stores. You have to interact with the store employees, Apple even called me at one point, possibly to verify that I'm a real person. And you also have to pay some money, $25 to Google once, $100 to Apple every year.
@@ -120,7 +126,7 @@ Of course this is opinionated but for startups/small businesses/isolated teams t
 
 ## To IAC or not to IAC
 
-Trying to provision as much stuff as possible with IAC can be difficult especially when dealing with freshly installed devices in your local infrastructure or with VMs in general. The industry-standard tool for provisioning machines or VMs is not terraform but Ansible. You can use Ansible to provision your cloud but you are going to have a horrible time doing that. The same applies for using terraform to provision your local machines.
+Trying to provision as much stuff as possible with IAC can be difficult especially when dealing with freshly installed devices in your local infrastructure or with VMs in general. The industry-standard tool for provisioning machines or VMs is not terraform but Ansible. You can use Ansible to provision your cloud but you are going to have a horrible time doing that. The same applies for using terraform to provision your local machines. *(Of course you can also use one to invoke the other...but that's not what this article is about)*
 
 Provisioning architecture on local infrastructure is harder. You first need to provision the machine itself: 
 - set up automatical updates and restarts
@@ -136,10 +142,14 @@ Then you setup the architecture required for the applications you want to run he
 
 Based on the analysis above, we need our IAC to handle the following:
 
-- **Target model**: terraform code is basically a description of the target model I want to have. I like that but it cannot be a complete tool for our IAC because it's missing manual steps and it's not a good tool to handle provisioning scripts for local machines or VMs.
+- **Target model**: terraform code is basically a description of the target model I want to have. Unfortunately terraform cannot be a complete tool for our IAC because it's missing manual steps and a sane way to describe dependencies that terraform itself depends on.
 
 - **Workflows**: Provisioning infrastructure, cloud, local or hybrid, sometimes requires multiple steps that are best executed as a part of a workflow that may or may not include manual steps. The workflow is not always required however, the component can be deployed directly just with the provided configuration.
 
 The target model can be represented by an UML component diagram or by the dependency graph that you [can create with terraform](https://developer.hashicorp.com/terraform/cli/commands/graph). Workflow represents steps required to provision certain parts of the target model.
 
 ![Target model & workflow](/posts/images/iacdevops/targetmodelwf2.png)
+
+## OS dependency only
+
+Ideal IAC tool is an application that handles your project in a single file or across multiple files, it should be just a single runnable application with no dependency on an external Postgre database and such. The only allowed dependency here is a filesystem.
