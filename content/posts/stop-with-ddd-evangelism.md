@@ -73,22 +73,38 @@ Everything about the example above is interpretable as the business logic.
 - The class has a single only constructor with a parameter. It's obvious that the user cannot be created without the name.
 - We can see that the name cannot be changed once the user is created, because there is no setter. This MAY represent a business requirement as well.
 - We can easily see that the name must be valid in a certain way. You don't need to analyse which part of code is related to business logic and which is not.
-- Invalid state of our code means we throw exception. I personally don't like throwing exceptions to represent invalid business logic state but I understand why it's appealing for some.
+- Invalid state of our code means we throw exception. I personally don't like throwing exceptions to represent invalid business logic state but I understand why it's appealing to some.
+
+## Persistence with DDD
+
+The `class User` in the example above is a **root aggregate**, basically the logical group of our domain or you could say a domain entity.
+
+I don't like creating rich domain classes like this for the following reasons:
+
+- for any change of the state the object must fully loaded into memory and then stored completely.
+- some domain areas tend to be complex - because the business itself is complicated and complex. The class can grow to thousands of lines.
+
+
+
 
 ## Is this the only way how to write the domain?
 
-The `class User` in the example above is a **root aggregate** which is part of the traditional terminology for DDD. You can see that there is no persistence mechanism visible in this code; persistence must be handled somewhere else. Or you can do event sourcing but I'll get to that later.
-
-If I follow the definition that the domain is basically just a logical part of my code that isolates the business logic in one place then no, the domain can be written in a different way.
 
 Let's look at the request-response handler example.
 
 ```csharp
-public class CreateUserHandler
+public class CreateUserHandler(IUserRepository userRepository)
 {
-    public async Task<CreateUserResponse> CreateUser(CreateUserRequest request)
+    public async Task<DomainResponse> CreateUser(CreateUserRequest request)
     {
-        
+        string nameSanitized = request.Name.RemoveUnsafeChars();
+    
+        if(nameSanitized.Length < 3 || nameSanitized.Length > 10)
+            return DomainResponse.Invalid("Name must be between 3 and 10 characters");
+
+        await userRepository.CreateUser(request.Name);
+
+        return DomainResponse.Success;
     }
 }
 
