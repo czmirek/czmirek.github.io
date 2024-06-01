@@ -73,7 +73,7 @@ Everything about the example above is interpretable as the business logic.
 - The class has a single only constructor with a parameter. It's obvious that the user cannot be created without the name.
 - We can see that the name cannot be changed once the user is created, because there is no setter. This MAY represent a business requirement as well.
 - We can easily see that the name must be valid in a certain way. You don't need to analyse which part of code is related to business logic and which is not.
-- Invalid state of our code means we throw exception. I personally don't like throwing exceptions to represent invalid business logic state but I understand why it's appealing to some.
+- Invalid state of our code means we throw exception. I personally don't like throwing exceptions to represent invalid business logic state but in this case it is necessary.
 
 ## Persistence with DDD
 
@@ -87,6 +87,10 @@ I don't like creating rich domain classes like this for the following reasons:
 When your object must be fully loaded into memory then loading the state from and to repository becomes very difficult if you use relational database. It's much easier if you use document database (load single document, save single document).
 
 But then what if you have a very rich domain entity but you want to update a single value property? What if that operations happens very often and you need to avoid loading and storing it completely?
+
+## Sagas
+
+
 
 ## Event sourcing and friends
 
