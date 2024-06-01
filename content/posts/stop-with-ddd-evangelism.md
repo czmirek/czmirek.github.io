@@ -81,14 +81,31 @@ The `class User` in the example above is a **root aggregate**, basically the log
 
 I don't like creating rich domain classes like this for the following reasons:
 
-- for any change of the state the object must fully loaded into memory and then stored completely.
+- for any change of the state the object must fully loaded into memory.
 - some domain areas tend to be complex - because the business itself is complicated and complex. The class can grow to thousands of lines.
 
+When your object must be fully loaded into memory then loading the state from and to repository becomes very difficult if you use relational database. It's much easier if you use document database (load single document, save single document).
 
+But then what if you have a very rich domain entity but you want to update a single value property? What if that operations happens very often and you need to avoid loading and storing it completely?
+
+## Event sourcing and friends
+
+Aggregate roots invite us to combine with event sourcing which is this neat idea that any business logic can be represented only as the list of events that represent change of state of certain domain entites.
+
+Your single source of truth can be a single denormalized list of event data. The state of your application is represented by this list replayed over your root aggregates...
+
+...which in my opinion is not worth it because you need to manage:
+
+- snapshots because you cannot keep loading the full list of events on any change of state
+- event versions because the business requiremts just keep changing
+- read models because you cannot read from the domain data directly
+
+## Some problems are not representable well with 
+
+## DDD and ES
 
 
 ## Is this the only way how to write the domain?
-
 
 Let's look at the request-response handler example.
 
@@ -107,8 +124,9 @@ public class CreateUserHandler(IUserRepository userRepository)
         return DomainResponse.Success;
     }
 }
-
 ```
+
+What is this? Can you call this a domain? Or is this a business logic implemented?
 
 
 ## Domain layer
