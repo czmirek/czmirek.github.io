@@ -213,11 +213,46 @@ Also with ES comes other complications.
 - event versions because the business requiremts just keep changing
 - read models because you cannot read from the domain data directly
 
+ES in my opinion is not worth it, at least not in C#.
+
 ## Collective rules
 
 DDD breaks when you consider collective rules. One of the typical examples is unique constraint on user emails - in other words, a business requirement that user should have unique emails.
 
 How do you do that? Let's look at what the internet is saying.
+
+
+### [SoftwareEngineering - Is there an elegant way to check unique constraints on domain object attributes without moving business logic into service layer?](https://softwareengineering.stackexchange.com/questions/318705/is-there-an-elegant-way-to-check-unique-constraints-on-domain-object-attributes?rq=1)
+
+> While it is true that domain should be persistence ignorant...
+
+No it should not. The domain layer should account for persistence if the business requirements account for persistence! 
+
+The domain layer is supposed to be the code that isolates and expresses the business requirements and ideas. If you define DDD only as *in memory aggregate roots* then you are contradicting the business requirements which expect you to understand that things live in a storage.   
+
+> ...it does know that there is "Collection of domain entities". 
+
+Yes, using rich aggregate roots forces me to find a different solution to how to handle constraints over collections. But how we separate the domain layer from persistence is up to us. 
+
+In my opinion the best way to represent repository in the domain is with interface that is as plain as possible. 
+
+```csharp
+public interface IUserRepository
+{
+    Task Add(User newUser);
+    //etc...
+}
+```
+
+Repository interfaces defined by the domain layer must be as plain as possible. The implementation can be whatever (sql, mongodb, ...) but you should not do something like `IUserRepository : ICrudRepository` unless you are specifically requested by the business to operate on your entities in a CRUD manner.
+
+You should treat your domain layer as a completely handwritten project with zero infrastructure/framework code. This forces you to write only the code that is necessary in a way that focuses on conveying the idea of the business requirements and nothing else.
+
+> And that there are domain rules that concern this collection as a whole. Uniqueness being one of them. And because the implementation of the actual logic heavily depends on specific persistence mode, there must be some kind of abstraction in the domain that specifies need for this logic.
+
+I agree with this.
+
+The domain layer is representation of all business requirements and it's very normal for the business to have conditional requirements over multiple aggregates even of different types. It's not only about unique constraints but any sort of collective constraint.
 
 ### [stackoverflow: DDD - Validation of unique constraint](https://stackoverflow.com/questions/2660817/ddd-validation-of-unique-constraint)
 
@@ -246,48 +281,50 @@ public class UserService(IUserRepository userRepo, IAggregateRootLayer aggregate
 
 > In essence: Look for the scope of the uniqueness and store an authoritative list of unique values inside an aggregate root representing that scope.
 
-This is a completely retarded. Do I really need to load all emails into memory each time I want to verify uniqueness of emails?
-
-### [SoftwareEngineering - Is there an elegant way to check unique constraints on domain object attributes without moving business logic into service layer?](https://softwareengineering.stackexchange.com/questions/318705/is-there-an-elegant-way-to-check-unique-constraints-on-domain-object-attributes?rq=1)
-
-> While it is true that domain should be persistence ignorant...
-
-No it should not. The domain layer should account for persistence if the business requirements account for persistence! 
-
-The domain layer is supposed to be the code that isolates and expresses the business requirements and ideas. If you define DDD only as *in memory aggregate roots* then you are contradicting the business requirements which expect you to understand that things live in a storage.   
-
-> ...it does know that there is "Collection of domain entities". 
-
-Yes, using rich aggregate roots forces me to find a different solution to how to handle constraints over collections. But how we separate the domain layer from persistence is up to us. 
-
-In my opinion the best way to represent repository in the domain is with interface that is as plain as possible. 
-
-```csharp
-public interface IUserRepository
-{
-    Task Add(User newUser);
-    //etc...
-}
-```
-
-Repository interfaces defined by the domain layer must be as plain as possible. The implementation can be whatever (sql, mongodb, ...) but you should not do something like `IUserRepository : ICrudRepository` unless you are specifically requested by the business to operate on your entities in a CRUD manner.
-
-> And that there are domain rules that concern this collection as a whole. Uniqueness being one of them. And because the implementation of the actual logic heavily depends on specific persistence mode, there must be some kind of abstraction in the domain that specifies need for this logic.
-
-I agree with this.
-
-The domain layer is representation of all business requirements and it's very normal for the business to have conditional requirements over multiple aggregates even of different types. It's not only about unique constraints but any sort of collective constraint.
+This is a completely retarded. Do I really need to load all emails into memory every time I want to create a new user?
 
 ### [SoftwareEngineering - How to handle business rules that are "uniqueness" constraints?](https://softwareengineering.stackexchange.com/questions/386671/how-to-handle-business-rules-that-are-uniqueness-constraints)
 
 > The uniqueness of an entity is not a business rule!
+> Read that again. I'll wait for it to sink in...
 
 DDD evangelist contradicting the obvious. Nothing else, really.
 
-Uniqueness of entity IS a business rule. Let that sink in. There are business rules and constraints across entities, even across different types of domain entities.
+Uniqueness of entity IS a business rule. Let THAT sink in. There are business rules and constraints across entities, even across different types of domain entities.
+
+> The uniqueness of a domain object is a technical invariant.
+
+False. Uniqueness over a domain entity is a normal business requirement. There's nothing wrong with that.
+
+> The only reason you need some sort of id value is to allow for persistence/hydration. That is, if you never had to serialize/unserialize your model you wouldn't need any id values!
+
+You use the IDs in your domain layer only if they are required by the businesses and most of you would agree that **business does not care about IDs**. But that's because the requirement is implicit most of the time. When your client/employer wants you to code a website with product administration it's obvious just from the requirement that the product must be uniquely identifiable somehow because you need to read the product from your API based on your ID.
+
+But honestly...even if you have an explicit business requirement, for example "unique product code", just ignore it and give your product a unique ID that is under your control. 
+
+ID-less domain entities are very difficult to reason about.
+
+Does this value belong to the domain layer? I believe it does, because it was an implicit requirement
 
 
 
+
+
+. Clients/employers don't often realise that their requirements  
+
+
+
+You can have a ID-less domain entity. For example you are working on an application for a logistics company that tracks GPS coordinates of vehicles every single minute. Sometimes the driver stops for a law mandated rest at a gas stations. Then you have series of domain entities with the same coordinates.
+
+```txt
+Latitude                Longitude
+50.152259269818046      14.49680288733176
+50.152259269818046      14.49680288733176
+50.152259269818046      14.49680288733176
+...
+```
+
+The are three domain entities with the same latitude and longitude. 
 
 
 ## Some problems are not representable well with 
