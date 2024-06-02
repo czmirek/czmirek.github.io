@@ -74,7 +74,7 @@ Everything about the example above is interpretable as the business logic.
 
 ## Persistence
 
-The `class User` in the example above is a **aggregate root**. Basically the logical group of our domain or you could say a domain entity.
+The `class User` in the example above is an **aggregate root** which is the logical group of our domain or a domain entity.
 
 The nice thing about using root aggregates is that we've isolated our domain from the persistence and our `class User` represents only the business logic, pure and nice. 
 
@@ -92,11 +92,9 @@ You are a software developer and your role is to transform the business requirem
 
 Why? **For your own clarity!** Isolating the business logic into a specific area allows you to separate "business" from "technology".
 
-Because software engineering (the "technology" part) is hard. You have to understand and work with so many things that are unrelated to the "business": logging, caching, naming things, exception handling, using right patterns and algorithms, optimizing, monitoring, persistence mechanisms, etc.
+Because software engineering (the "technology" part) is hard. You have to understand and work with so many things that are unrelated to the "business": logging, caching, naming things, exception handling, using right patterns and algorithms, optimizing, monitoring, persistence mechanisms, etc. Separating business to it's own layer helps you in most cases and in most businesses. That's why the idea of the domain layer is so appealing to most. 
 
-Separating "business" to it's own layer helps you in most cases and in most businesses. That's why the idea of the domain layer is so appealing for most. 
-
-## Technology agnosticism
+## Technological agnosticism
 
 Code in the domain layer is supposed to be written in the most technology-agnostic way possible. Domain layer shouldn't care about caching, logging, exception handling, etc., all of that should be handled in any layer above the domain layer.
 
@@ -139,18 +137,18 @@ You can go all extreme with this.
 - What about `ProductEntity`?
 - What about `IProductRepository`?
 
-Or even most extreme.
+Or even the most extreme and ridiculous.
 
 - What about keywords such as `public`, `class`, `void`? Are they defined by the business?
 
-**Of course there's a limit!** You are a software developer and you code using a certain programming language and not a natural language. Where do you set the limit on how to express the business ideas in your code? **That's up to you!** Expressing the business ideas into the domain layer is an art of balance between:
+**Of course it's ridiculous!** You are a software developer and you code using a certain programming language and not a natural language. Where do you set the limit on how to express the business ideas in your code? **That's up to you!** Expressing the business ideas into the domain layer is an art of balance between:
 
 - expressing the business ideas as clearly as possible 
 - having a transparent, clean and understandable code architecture
 
 You cannot have both. Going too far with the expression of the domain layer means you are overengineering. Sure, you have your nice and pretty aggregate roots but then you need to have all this complicated architecture around.
 
-The other extreme is that you don't have the domain layer at all and your business logic is mixed with everything else in your application. This equals to unmaintainable code that is very hard to work with, navigate and makes us sad :(
+The other extreme is that you don't have the domain layer at all and your business logic is mixed with everything else in your application. This equals to unmaintainable code that is very hard to work with and navigate. And that makes us software developers sad 😥
 
 ### DDD evangelists
 
@@ -162,15 +160,15 @@ Are you programming:
 - monitoring UI that reads and analyses data from a stock exchange feed but is not supposed to store anything?
 - e-shop where you need to store products, prices, warehouse stock, articles? 
 
-Obviously the answer to whether or not you need persistence is **defined by the business** or by the requirements. It's also perfectly reasonable to have a single application in which parts of the domain layer require persistence, other parts don't!
+Obviously the answer to whether or not you need persistence is **defined by the business** or by the requirements. It's also perfectly reasonable to have a single application in which parts of the domain layer require persistence and other parts don't!
 
 That's very clear and understandable right? You might have worked for a client that might have not immediately realised that the information about the "product" in his e-shop must be physically stored somewhere, somehow. Or the client or your employer expect that the concept of persistence is automatically understood with requirements.
 
 Now comes the DDD evangelist.
 
-He's misinterpreting the lack of clear business requirement about persistence to defend his overengineered project with nice and clean persistenceless aggregate roots. So he'll say something retarded like *"The business does not care about persistence"*. Or something mysterious like *"We must dig deeper into the requirements to understand what the business REALLY wants."* And I've heard or read this variant so many times. 
+He's misinterpreting the lack of clear business requirement about persistence to defend his overengineered project with nice and clean persistenceless aggregate roots. So he'll say something retarded like *"The business does not care about persistence"*. Or something mysterious like *"We must dig deeper into the requirements to understand what the business REALLY wants."* And I've heard this variant so many times. 
 
-Like, what the fuck? The business is literally saying *"The product should not be stored if it has no name"* and your response is *"You shouldn't care about persistence"* ???
+Like, what the fuck? The business is literally saying *"The product should not be stored if it has no name"* and your response is *"You shouldn't care about persistence"* ?
 
 ## Event sourcing
 
@@ -205,22 +203,21 @@ public class User(IEventSender eventSender) : IEventHandler<UserNameChanged>
 }
 ```
 
-For me the simple code above is already loosing clarity about the domain because the aggregate root is just a single class. Some domain entities tend to be very complex and with all the Handle methods the code can easily grow to thousands of lines.
+For me the simple code above is already loosing clarity about the domain because the aggregate root is just a single class. Some domain entities tend to be very complex and with all the Handle methods the code can easily grow to too many lines of code.
 
-Also with ES comes other complications. 
+ES includes more complications. 
 
 - snapshots because you cannot keep loading the full list of events on any change of state
-- event versions because the business requiremts just keep changing
+- event versions because the business requirements just keep changing
 - read models because you cannot read from the domain data directly
 
-ES in my opinion is not worth it, at least not in C#.
+ES in my opinion is not worth it because of the complexities and architecting required.
 
 ## Collective rules
 
 DDD breaks when you consider collective rules. One of the typical examples is unique constraint on user emails - in other words, a business requirement that user should have unique emails.
 
-How do you do that? Let's look at what the internet is saying.
-
+How do you do that? Let's look at what the DDD evangelists are saying.
 
 ### [SoftwareEngineering - Is there an elegant way to check unique constraints on domain object attributes without moving business logic into service layer?](https://softwareengineering.stackexchange.com/questions/318705/is-there-an-elegant-way-to-check-unique-constraints-on-domain-object-attributes?rq=1)
 
@@ -288,7 +285,7 @@ This is a completely retarded. Do I really need to load all emails into memory e
 > The uniqueness of an entity is not a business rule!
 > Read that again. I'll wait for it to sink in...
 
-DDD evangelist contradicting the obvious. Nothing else, really.
+DDD evangelist contradicting the obvious.
 
 Uniqueness of entity IS a business rule. Let THAT sink in. There are business rules and constraints across entities, even across different types of domain entities.
 
@@ -298,106 +295,104 @@ False. Uniqueness over a domain entity is a normal business requirement. There's
 
 > The only reason you need some sort of id value is to allow for persistence/hydration. That is, if you never had to serialize/unserialize your model you wouldn't need any id values!
 
-You use the IDs in your domain layer only if they are required by the businesses and most of you would agree that **business does not care about IDs**. But that's because the requirement is implicit most of the time. When your client/employer wants you to code a website with product administration it's obvious just from the requirement that the product must be uniquely identifiable somehow because you need to read the product from your API based on your ID.
+Business does not care about IDs but that's because the requirement is implicit most of the time. When your client/employer wants you to code a website with product administration it's obvious that the product must be uniquely identifiable somehow because you need to read the product from your API based on some identifier.
 
-But honestly...even if you have an explicit business requirement, for example "unique product code", just ignore it and give your product a unique ID that is under your control. 
+#### Using database IDs
 
-ID-less domain entities are very difficult to reason about.
+Your persistence mechanisms should comply to decisions made in your domain layer and not vice versa. Your persistence layer should **NOT** define the IDs for your domain layer, it must be the other way around. Do not architect a system where the IDs created in the persistence layer somehow propagate into your domain entities - it's not worth it. 
 
-Does this value belong to the domain layer? I believe it does, because it was an implicit requirement
+If you code a domain layer, you should NOT use any kind of auto-generated int IDs (and such) in your persistence layer. That way you are delegating the business logic from your domain layer into your persistence layer which destroys the whole purpose of the domain layer --- to isolate all business logic into one place.
 
+#### ID-less domain entities
 
-
-
-
-. Clients/employers don't often realise that their requirements  
-
-
-
-You can have a ID-less domain entity. For example you are working on an application for a logistics company that tracks GPS coordinates of vehicles every single minute. Sometimes the driver stops for a law mandated rest at a gas stations. Then you have series of domain entities with the same coordinates.
+Not every domain entity needs to have an ID. For example you are working on an application for a logistics company that tracks GPS coordinates of vehicles every single minute. Sometimes the driver stops for a law mandated rest at a gas stations. Then you have series of domain entities with the same coordinates.
 
 ```txt
-Latitude                Longitude
-50.152259269818046      14.49680288733176
-50.152259269818046      14.49680288733176
-50.152259269818046      14.49680288733176
+Latitude                Longitude           Time
+50.152259269818046      14.49680288733176   2024/06/02 21:04
+50.152259269818046      14.49680288733176   2024/06/02 21:05  
+50.152259269818046      14.49680288733176   2024/06/02 21:06
 ...
 ```
 
-The are three domain entities with the same latitude and longitude. 
+The business wants to know where the vehicle was and when...but that's all. The tracking entities do not need to have IDs at all. They are only listed or filtered by the time.
 
+## What persistence to use with DDD?
 
-## Some problems are not representable well with 
+Use anything you like. I believe that document databases such as MongoDB fit DDD better because any domain entity can be stored as a single document. I like simple solutions and you cannot go any simpler than that.
 
-## DDD and ES
+Using SQL RDBMS with DDD is more complicated. If your domain entity is very complex then the implementation of your persistance layer is very complex as well. In document databases it's  much easier to implement any given entity in a CRUD manner because for *update* you just completely replace the whole document (and then optimize if needed). In SQL RDBMS you are always forced to care what exactly changed in the given update operation so you don't write the update for all relevant tables (unless it's necessary).
+ 
+## Distributed transactions
 
+...how to write distributed transactions with DDD...
 
-## Is this the only way how to write the domain?
+## Difference between *the domain layer* and *the business layer*
 
-Let's look at the request-response handler example.
+I believe that before DDD most of software developers learned about the traditional 3-layer architecture that was sitting between UI and database layer.
+
+But there's a difference. In the traditional 3-layer architecture we put everyhing into the business layer. Caching, logging, monitoring and sometimes just transformations between the UI and the database layer. Business layer was everything that was not UI related and not database related.
+
+The domain layer however does not care whether there are other layers. You could have an onion layer system, n-layer system or not use layers at all, it's not important. The domain layer expresses some area of knowledge, business logic isolated into one place.
+
+## How to write the domain layer?
+
+However you like.
+
+I'm a simple man and I like when things are simple and easy to understand. Software engineering is hard enough already so let's not complicate things, right?
+
+### Simple architecture
+
+- Any change of state must be invoked by sending a request into the domain. The request is always a custom type, the response is either empty or a custom type.
+- The domain can produce an event for any request. Can but does not have to. The event is a custom type.
+- The domain defines repository interfaces which accept or return aggregate roots/domain entities.
+  - The implementation of the repository interfaces is outside the domain layer. The implementation does not need to use the domain types at all and can use its own custom types.
+
+### Domain layer
+
+The domain layer is split into **areas** which are just folders that either contain a flat list of all code files or the following folder structure:
+- **Request** - contains request models
+- **Response** - contains response models
+- **Event** - contains event models
+- **Data** - contains repository interfaces
+- **Entity** - contains domain entity models (synonymous to aggregate roots)
+- **Handler** - contains request handlers
+
+This structure is not fixed. Sometimes I use a **Models** folder that contains all anemic models (request, response, event, entity) and the root of the area contains the handler and the repository interface. 
+
+Most of the time each area corresponds to a single domain entity but it's not always the case.
+
+### Sagas and workflows
+
+Sometimes it makes a sense to code a request that only invokes other different requests. This is a distributed transaction
+
+### Models are anemic
+
+My models including all aggregate roots are anemic immutable classes. They hold data and contain no logic at all. Every property must be defined on creation. These models and any nested models are public by default because they can be reused everywhere else:
+
+- in request and/or response models
+- in event models
+- in repository data models
 
 ```csharp
-public class CreateUserHandler(IUserRepository userRepository)
+public sealed class User
 {
-    public async Task<DomainResponse> CreateUser(CreateUserRequest request)
-    {
-        string nameSanitized = request.Name.RemoveUnsafeChars();
-    
-        if(nameSanitized.Length < 3 || nameSanitized.Length > 10)
-            return DomainResponse.Invalid("Name must be between 3 and 10 characters");
-
-        await userRepository.CreateUser(request.Name);
-
-        return DomainResponse.Success;
-    }
--}
+    public required UserId Id { get; init; }
+    public required string Name { get; init; }
+    public required ImmutableArray<Address> Addresses { get; init; }
+    //...etc
+}
 ```
 
-What is this? Can you call this a domain? Or is this a business logic implemented?
+### Repository interfaces
 
+The domain layer defines the repository interfaces because, as I said in this article, repository is a business requirement most of the times.
 
-## Domain layer
+### Request & Response handlers
 
-How you define the logical group?
+Every business defined operation has a request model and a response model.
 
+### Areas
 
+...
 
-
-The domain is the code we write for **the user**. It's the part of the code where we **isolate** what the user wants from everything else.
-
-The definition of DDD is very broad and it's synonymous with **the business logic**. Business logic is nothing else but a layer or part of your code that defineds "what the business wants" whi
-
-
-
-. It is basically a paradigm which says that **the business logic** is the primary focus of your application.
-
-The "domain" is either synonymous with "the business logic of the application" or it points to a logical group of the business logic. 
-
-
-
-
-
-Look at the definitions above. What does it say? A "spehere of knowledge" or "target subject of a specific programming project". 
-
-Software engineering is hard. You have to understand and work with so many things that are unrelated to "what the user wants": logging, caching, naming things, exception handling, using right patterns and algorithms, optimizing, monitoring, persistence mechanisms, etc.
-
-The idea of DDD is to isolate the domain or **what the user wants** into a part of code that is separated from all that difficult stuff mentioned above.
-
-## Why is DDD confusing
-
-After browsing this topic on the internet for some time I feel like the online developer community keeps forgetting and then is rediscovering why the DDD paradigm is so useful.
-
-We do DDD because it gives us clarity about the code. We separate the "business logic" into 
-
-
-
-DDD paradigm is not very useful if:
-
-- the thing we are building is very small in scope. 
-- it's hard or meaningless to define **the user**. For example if we are programming an air-to-air rocket navigation system.
-
-
-
-## Implementation
-
-How you implement the domain **is not important**. 
