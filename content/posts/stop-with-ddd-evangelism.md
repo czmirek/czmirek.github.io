@@ -259,7 +259,9 @@ Wrong. The email uniqueness is a real business requirement so it belongs into th
 
 Let's say I want to create a user. There's some validation in my `User` aggregate root but I also want to enforce an unique email which is something I obviously cannot do in the `User` class
 
-So instead of trying to bend everything for aggregate roots I'll create a service in my domain layer that is responsible for creating the user.
+So instead of trying to bend everything for aggregate roots I'll create a service in my domain layer that is responsible for creating the user. 
+
+*(The code below is just an example, not how I'd do that, how I write DDD is written at the bottom of this article)* 
 
 ```csharp
 public class UserService(IUserRepository userRepo, IAggregateRootLayer aggregateRootLayer)
