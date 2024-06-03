@@ -103,7 +103,7 @@ Is that even a right thing to do?
 
 **Does it even make sense to define the domain layer without persistence?**
 
-I'm saying **it depends**
+I'm saying **it depends**.  
 
 Are you programming:
 - monitoring UI that reads and analyses data from a stock exchange feed but is not supposed to store anything?
@@ -122,14 +122,16 @@ He'll say something retarded like *"The business does not care about persistence
 Or he may say something mysterious like *"We must dig deeper into the requirements to understand what the business REALLY wants."* DDD evangelists tend to look for problems where there are none and the requirements are clear.
 
 ## Services in your domain layer
-Let's say that the business wants you to use MS Dynamics 365 as a storage for your product images. How would you handle this? How do you call the interface for the image service:
+Let's say that the business wants you to use MS Dynamics 365 as a storage for your product images. How would you handle this? How do you name the interface for the image service?
 
 - `IImageStore`?
 - `IProductImageStore`?
 - `IDynamics365ImageStore`?
 - `IDynamics365ProductImageStore`?
 
-The DDD evangelists say that external services do not belong into the domain layer at all.
+The DDD evangelists say that external services do not belong into the domain layer at all, again, defending the idea of a rich aggregate root that nicely represent a *pure* view on the business logic. You'd have to overengineer and use event driven programming to coordinate data between your aggregates and the image store. 
+
+
 
 
 
