@@ -1,8 +1,14 @@
 +++
-title = 'Stop with the DDD evangelism'
+title = 'DDD evangelism'
 date = 2024-05-31T14:36:00+02:00
 draft = false
 +++
+
+## Foreword
+
+This article is criticism of how DDD is usually implemented in software engineering, how DDD evangelists try to convice us (but mostly themselves) about the validity of their views and finally my take on DDD.
+
+## Definition
 
 **Domain Driven Development** is a software development paradigm focused on the **domain**. The Domain is usually defined broadly:
 
@@ -17,90 +23,13 @@ Don't we already have this concept in software development? It's called **busine
 - **The business logic** is any code related to the requirements of the "business". This can be anywhere in your code.
 - **The domain** is always a business logic code but in a certain "domain scope" which is nothing else but just a logical group of code dedicated purely for your business logic.
 
-### Business logic example
+## What is the "domain"?
 
-This code contains business logic i.e. code "required by the business" but you wouldn't call it a domain code because there's a lot of infrastructural code.
+You are a software developer and your role is to transform the business requirements into a working software. The most important concept from DDD is isolation of **the domain layer** which is the part of your code that focuses on **expressing what the user/business wants**. 
 
-```csharp
-//not a business logic
-[HttpPost("users/create")]
-public async Task<IActionResult> CreateUser(string name)
-{
-    //might be business logic
-    string nameSanitized = name.RemoveUnsafeChars();
-    
-    //is valid business logic
-    //it's directly linked to a business requirement
-    //that name must be between 3 and 10 characters
-    if(nameSanitized.Length < 3 || nameSanitized.Length > 10)
-        return BadRequest(); //not a business logic 
-                             //(business does not care about HTTP)
+Why? **For your own clarity!** Isolating the business logic into a specific area allows you to see the most important part of your code in one place.
 
-    //would't call this business logic
-    await userRepo.CreateUser(email, name);
-
-    //not a business logic
-    //(business does not care about HTTP)
-    return Ok();
-}
-```
-### Domain example
-
-The following code is a domain code.
-
-```csharp
-public class User
-{
-    public string Name { get; private set; }
-
-    public User(string name)
-    {
-        string nameSanitized = name.RemoveUnsafeChars();
-        if(nameSanitized.Length < 3 || nameSanitized.Length > 10)
-            throw new DomainException("Name must be between 3 and 10 characters long");
-
-        Name = nameSanitized; 
-    }
-
-}
-```
-
-Everything about the example above is interpretable as the business logic.
-
-- The class has a single only constructor with a parameter. It's obvious that the user cannot be created without the name.
-- We can see that the name cannot be changed once the user is created, because there is no setter. This MAY represent a business requirement as well.
-- We can easily see that the name must be valid in a certain way. You don't need to analyse which part of code is related to business logic and which is not.
-- Invalid state of our code means we throw exception. I personally don't like throwing exceptions to represent invalid business logic state but in this case it is necessary.
-
-## Persistence
-
-The `class User` in the example above is an **aggregate root** which is the logical group of our domain or a domain entity.
-
-The nice thing about using root aggregates is that we've isolated our domain from the persistence and our `class User` represents only the business logic, pure and nice. 
-
-...but hang on.
-
-Is that even a right thing to do?
-
-**Does it even make sense to define the domain layer without persistence?** The DDD evangelists say yes, I'm saying it depends.
-
-Continue reading.
-
-## How I define the domain layer
-
-You are a software developer and your role is to transform the business requirements into a working software. The most important thing from DDD is isolation of **the domain layer** which is the part of your code that focuses on **expressing what the user/business wants**. 
-
-Why? **For your own clarity!** Isolating the business logic into a specific area allows you to separate "business" from "technology".
-
-Because software engineering (the "technology" part) is hard. You have to understand and work with so many things that are unrelated to the "business": logging, caching, naming things, exception handling, using right patterns and algorithms, optimizing, monitoring, persistence mechanisms, etc. Separating business to it's own layer helps you in most cases and in most businesses. That's why the idea of the domain layer is so appealing to most. 
-
-## Technological agnosticism
-
-Code in the domain layer is supposed to be written in the most technology-agnostic way possible. Domain layer shouldn't care about caching, logging, exception handling, etc., all of that should be handled in any layer above the domain layer.
-
-The domain layer is the layer at the bottom, it's the code where any state change request eventually goes.
-
-## Clarity & semantics in the domain layer is the main priority
+### Clarity & semantics in the domain layer is the main priority
 
 The way the domain layer is written should equal to the way the business defines itself and its requirements. The semantics is extremely important in the domain layer.
 
@@ -123,7 +52,7 @@ public class ProductService(IProductRepository repo)
 }
 ```
 
-The code above is okay if you don't use the domain layer. But if you want to isolate the domain layer, you should ask the following questions:
+If you want to isolate the domain layer, you should ask the following questions:
 
 - Is it an explicit business requirement that...
    - ...the product can be created without the name?
@@ -137,38 +66,74 @@ You can go all extreme with this.
 - What about `ProductEntity`?
 - What about `IProductRepository`?
 
-Or even the most extreme and ridiculous.
+Or even to the absurd.
 
-- What about keywords such as `public`, `class`, `void`? Are they defined by the business?
+- What about keywords such as `public`, `class`, `void`? Are they defined by the business? Should I pick a different programming language that is better at expressing business ideas?
 
-**Of course it's ridiculous!** You are a software developer and you code using a certain programming language and not a natural language. Where do you set the limit on how to express the business ideas in your code? **That's up to you!** Expressing the business ideas into the domain layer is an art of balance between:
+Where do you set the limit on how to express the business ideas in your code? **That's up to you!** Expressing the business ideas into the domain layer is an art of balance between:
 
 - expressing the business ideas as clearly as possible 
 - having a transparent, clean and understandable code architecture
 
-You cannot have both. Going too far with the expression of the domain layer means you are overengineering. Sure, you have your nice and pretty aggregate roots but then you need to have all this complicated architecture around.
+You cannot have both. Going too far with the expression of the domain layer means you are overengineering. Or you don't have the domain layer at all and your business logic is mixed with everything else in your application. This equals to unmaintainable code that is very hard to work with and navigate. And that makes us software developers sad 😥
 
-The other extreme is that you don't have the domain layer at all and your business logic is mixed with everything else in your application. This equals to unmaintainable code that is very hard to work with and navigate. And that makes us software developers sad 😥
+## DDD and persistence
 
-### DDD evangelists
+DDD is usually implemented with rich classes called **aggregate root** like this.
 
-The internet is full of DDD evangelists trying to convince others that the domain layer is so important that it's worth the overengineering. Not only that, they claim all sorts of bullshit, trying to justify hundreds of hours spent into their overengineered projects.
+```csharp
+public class User
+{
+    public string Name { get; }
+    public User(string name)
+    {
+        if(name.Length < 3 || name.Length > 10)
+            throw new DomainException("Name must be between 3 and 10 characters long");
 
-## Does it make sense to define the domain layer without persistence?
+        Name = name;
+    }
+}
+```
+
+The nice thing about using root aggregates is that we've isolated our domain from the persistence and our `class User` represents only the in memory business logic, pure and nice.
+
+...but hang on. 🤔
+
+Is that even a right thing to do?
+
+**Does it even make sense to define the domain layer without persistence?**
+
+I'm saying **it depends**
 
 Are you programming:
 - monitoring UI that reads and analyses data from a stock exchange feed but is not supposed to store anything?
 - e-shop where you need to store products, prices, warehouse stock, articles? 
 
-Obviously the answer to whether or not you need persistence is **defined by the business** or by the requirements. It's also perfectly reasonable to have a single application in which parts of the domain layer require persistence and other parts don't!
+Obviously the answer to whether or not you need persistence is **defined by the business**. It's also perfectly reasonable to have a single application in which parts of the domain layer require persistence and other parts don't.
 
-That's very clear and understandable right? You might have worked for a client that might have not immediately realised that the information about the "product" in his e-shop must be physically stored somewhere, somehow. Or the client or your employer expect that the concept of persistence is automatically understood with requirements.
+That's very clear and understandable right? 
+
+You might have worked for a client that might have not immediately realised that the information about the "product" in his e-shop must be physically stored somewhere, somehow. Or the client or your employer expect that the concept of persistence is automatically understood with requirements.
 
 Now comes the DDD evangelist.
 
-He's misinterpreting the lack of clear business requirement about persistence to defend his overengineered project with nice and clean persistenceless aggregate roots. So he'll say something retarded like *"The business does not care about persistence"*. Or something mysterious like *"We must dig deeper into the requirements to understand what the business REALLY wants."* And I've heard this variant so many times. 
+He'll say something retarded like *"The business does not care about persistence"*. I've heard this even in a corporation that was explicitly saying "We are data driven" in its IT strategy. The correct reply to this is that business does not care about exact persistence mechanism but most of the times it cares about persistence implicitly.
 
-Like, what the fuck? The business is literally saying *"The product should not be stored if it has no name"* and your response is *"You shouldn't care about persistence"* ?
+
+
+or something mysterious like *"We must dig deeper into the requirements to understand what the business REALLY wants."* DDD evangelists look for problems where there are none and the requirements are clear.
+
+## Services in your domain layer
+Let's say that the business wants you to use MS Dynamics 365 as a storage for your product images. How would you handle this? How do you call the interface for the image service:
+
+- `IImageStore`?
+- `IProductImageStore`?
+- `IDynamics365ImageStore`?
+- `IDynamics365ProductImageStore`?
+
+The DDD evangelists say that external services do not belong into the domain layer at all.
+
+
 
 ## Event sourcing
 
