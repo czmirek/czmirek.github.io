@@ -119,9 +119,7 @@ Now comes the DDD evangelist.
 
 He'll say something retarded like *"The business does not care about persistence"*. I've heard this even in a corporation that was explicitly saying "We are data driven" in its IT strategy. The correct reply to this is that business does not care about exact persistence mechanism but most of the times it cares about persistence implicitly.
 
-
-
-or something mysterious like *"We must dig deeper into the requirements to understand what the business REALLY wants."* DDD evangelists look for problems where there are none and the requirements are clear.
+Or he may say something mysterious like *"We must dig deeper into the requirements to understand what the business REALLY wants."* DDD evangelists tend to look for problems where there are none and the requirements are clear.
 
 ## Services in your domain layer
 Let's say that the business wants you to use MS Dynamics 365 as a storage for your product images. How would you handle this? How do you call the interface for the image service:
